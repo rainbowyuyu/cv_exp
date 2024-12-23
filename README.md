@@ -35,7 +35,6 @@
 
 ## 依赖库的安装
 
-   - 切换到文件目录 `cd ./cv_exp4`
    - 一键安装依赖 `pip install -r requirements.txt`
    - 记得改自己的文件路径
 
@@ -149,3 +148,39 @@ cv_rcnn
 ├── model   
 ├── datasets    
 ├── cv_exp6.ipynb 
+
+---
+
+# cv_unet(exp7)
+计算机视觉实验7
+
+---
+
+## 数据预处理
+- 在 `process.py` 中，完成对 `images` 和 `mask` 的读入
+
+## U -net模型
+- 在 `unet.py` 中，完成对 U-net 网络的构建
+
+## 训练模型
+- 在 `train.py` 中，读取训练集，完成对模型的训练，保存为 `unet_model.h5`
+
+## 评估模型
+- 在 `eval.py` 中，读取测试集，完成保存模型的评估
+
+## 详细使用方法
+
+   ```bash
+   pip install -r requirements.txt
+   cd ./cv_unet
+   python train.py
+   python eval.py
+   ```
+
+## 大致最终文件结构
+cv_unet  
+├── DRIVE  
+├── process.py    
+├── unet.py   
+├── train.py     
+├── test.py
