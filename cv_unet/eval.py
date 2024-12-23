@@ -21,6 +21,7 @@ def evaluate_model(image_dir, mask_dir):
     print(confusion_matrix(y_val.flatten(), y_pred.flatten()))
     print(classification_report(y_val.flatten(), y_pred.flatten()))
 
+
 if __name__ == "__main__":
     # 替换为DRIVE数据集的路径
     image_dir = 'DRIVE/test/images'

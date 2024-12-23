@@ -5,11 +5,7 @@ import numpy as np
 import cv2
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
-
 from PIL import Image
-import numpy as np
-import cv2
-import os
 
 
 def load_images(image_dir, mask_dir):

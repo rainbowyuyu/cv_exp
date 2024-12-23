@@ -1,7 +1,7 @@
 # rainbow_yu cv_exp 🐋✨
 # 计算机视觉实验难点汇总
 
-__version__ = '0.4.2'
+__version__ = '0.4.3'
 
 __all__ = (
     "cv_mnist",  # cv_exp4

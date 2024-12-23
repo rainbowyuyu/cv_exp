@@ -69,7 +69,7 @@
 ## 详细使用方法  
 
 1. 安装依赖：
-   > 直接requirements里的依赖
+   > 直接 requirements.txt 里的依赖
    ```bash
    pip install -r requirements.txt
    ```
@@ -80,6 +80,7 @@
    conda activate [env-name]
    pip install -r requirements.txt
    ```
+   > 如果全局下的 requirements.txt 存在版本问题，优先安装 `./exp_cnn` 下的 requirements.txt
    
 3. 注意事项：
 - 根据实际情况调整 CUDA 和 cuDNN 的版本。
