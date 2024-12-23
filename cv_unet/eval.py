@@ -1,24 +1,30 @@
 # rainbow_yu cv_exp.cv_unet.eval 🐋✨
 
 import tensorflow as tf
+from sklearn.metrics import confusion_matrix, classification_report
+from unet import unet_model
 from process import preprocess_data
-from unet import Unet
-from sklearn.metrics import mean_absolute_error
+import numpy as np
 
-# 配置路径
-image_dir = 'path/to/images'
-mask_dir = 'path/to/masks'
+def evaluate_model(image_dir, mask_dir):
+    # 加载和预处理数据
+    _, X_val, _, y_val = preprocess_data(image_dir, mask_dir)
 
-# 加载数据
-X_train, X_test, y_train, y_test, _, _ = preprocess_data(image_dir, mask_dir)
+    # 加载训练好的模型
+    model = tf.keras.models.load_model('unet_model.h5')
 
-# 加载训练好的模型
-model = tf.keras.models.load_model('unet_model.h5')
+    # 预测结果
+    y_pred = model.predict(X_val)
+    y_pred = (y_pred > 0.5).astype(np.uint8)  # Thresholding for binary segmentation
 
-# 预测
-y_pred = model.predict(X_test)
+    # 计算混淆矩阵和分类报告
+    print(confusion_matrix(y_val.flatten(), y_pred.flatten()))
+    print(classification_report(y_val.flatten(), y_pred.flatten()))
 
-# 计算评估指标
-mae = mean_absolute_error(y_test.flatten(), y_pred.flatten())
-print("Mean Absolute Error:", mae)
+if __name__ == "__main__":
+    # 替换为DRIVE数据集的路径
+    image_dir = 'DRIVE/test/images'
+    mask_dir = 'DRIVE/test/1st_manual'
+    evaluate_model(image_dir, mask_dir)
+
 

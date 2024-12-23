@@ -8,8 +8,8 @@ pillow
 scikit-learn
 joblib
 PyQt5
-numpy==1.26.4
+numpy
 matplotlib
 opencv-python
-tensorflow==2.14.0
+tensorflow
 keras

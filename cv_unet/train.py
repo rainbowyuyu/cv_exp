@@ -1,23 +1,29 @@
 # rainbow_yu cv_exp.cv_unet.train 🐋✨
 
 import tensorflow as tf
+from unet import unet_model
 from process import preprocess_data
-from unet import Unet
-import os
 
-# 配置路径
-image_dir = 'DRIVE/train/images'
-mask_dir = 'DRIVE/train/mask'
 
-# 加载数据
-X_train, X_test, y_train, y_test, image_datagen, mask_datagen = preprocess_data(image_dir, mask_dir)
+def train_model(image_dir, mask_dir, epochs=10, batch_size=16):
+    # 加载和预处理数据
+    X_train, X_val, y_train, y_val = preprocess_data(image_dir, mask_dir)
 
-# 创建 U-Net 模型
-model = Unet(data_format='channels_last', classes=1, transpose_conv=True)
+    # 构建模型
+    model = unet_model()
 
-# 编译模型
-model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    # 训练模型
+    history = model.fit(X_train, y_train, validation_data=(X_val, y_val),
+                        epochs=epochs, batch_size=batch_size)
 
-# 训练模型
-model.fit(image_datagen.flow(X_train, y_train), validation_data=(X_test, y_test), epochs=50)
+    # 保存模型
+    model.save('unet_model.h5')
 
+    return model, history
+
+
+if __name__ == "__main__":
+    # 替换为DRIVE数据集的路径
+    image_dir = 'DRIVE/training/images'
+    mask_dir = 'DRIVE/training/1st_manual'
+    model, history = train_model(image_dir, mask_dir)

@@ -1,33 +1,52 @@
 # rainbow_yu cv_exp.cv_unet.process 🐋✨
 
-import numpy as np
 import os
-import tensorflow as tf
-from tensorflow.keras.preprocessing import image
+import numpy as np
+import cv2
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+import tensorflow as tf
+
+from PIL import Image
+import numpy as np
+import cv2
+import os
 
 
-def load_images(image_dir, mask_dir, image_size=(256, 256)):
-    """加载图像和掩码"""
-    image_files = [f for f in os.listdir(image_dir) if f.endswith('.tif')]
-    mask_files = [f for f in os.listdir(mask_dir) if f.endswith('.tif')]
-
+def load_images(image_dir, mask_dir):
     images = []
     masks = []
 
-    for img_file, mask_file in zip(image_files, mask_files):
-        img_path = os.path.join(image_dir, img_file)
-        mask_path = os.path.join(mask_dir, mask_file)
+    for file_name in os.listdir(image_dir):
+        if file_name.endswith(".tif"):
+            img_path = os.path.join(image_dir, file_name)
+            mask_path = os.path.join(mask_dir, file_name.replace('training', 'manual1').replace('.tif', '.gif'))
 
-        img = image.load_img(img_path, target_size=image_size)
-        img = image.img_to_array(img) / 255.0  # 归一化
+            if not os.path.exists(img_path):
+                print(f"Image not found: {img_path}")
+                continue
+            if not os.path.exists(mask_path):
+                print(f"Mask not found: {mask_path}")
+                continue
 
-        mask = image.load_img(mask_path, target_size=image_size, color_mode='grayscale')
-        mask = image.img_to_array(mask) / 255.0  # 归一化
+            # Load image using cv2
+            img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+            if img is None:
+                print(f"Failed to read image: {img_path}")
+                continue
+            img = cv2.resize(img, (256, 256))  # Resize image to consistent size
+            img = np.expand_dims(img, axis=-1) / 255.0  # Normalize and add channel dimension
 
-        images.append(img)
-        masks.append(mask)
+            # Load mask using PIL to handle GIF format
+            mask = Image.open(mask_path).convert('L')  # Convert to grayscale ('L')
+            mask = np.array(mask)
+            if mask is None:
+                print(f"Failed to read mask: {mask_path}")
+                continue
+            mask = cv2.resize(mask, (256, 256))  # Resize mask to consistent size
+            mask = np.expand_dims(mask, axis=-1) / 255.0  # Normalize
+
+            images.append(img)
+            masks.append(mask)
 
     images = np.array(images)
     masks = np.array(masks)
@@ -35,22 +54,13 @@ def load_images(image_dir, mask_dir, image_size=(256, 256)):
     return images, masks
 
 
-def preprocess_data(image_dir, mask_dir, image_size=(256, 256), test_size=0.2):
-    """预处理数据并划分训练集和测试集"""
-    images, masks = load_images(image_dir, mask_dir, image_size)
+def preprocess_data(image_dir, mask_dir, test_size=0.2):
+    """
+    Split data into train and validation sets.
+    """
+    images, masks = load_images(image_dir, mask_dir)
+    X_train, X_val, y_train, y_val = train_test_split(images, masks, train_size=1-test_size,test_size=test_size, random_state=42)
 
-    # 划分训练集与测试集
-    X_train, X_test, y_train, y_test = train_test_split(images, masks, test_size=test_size, random_state=42)
-
-    # 数据增强
-    data_gen_args = dict(rotation_range=10, width_shift_range=0.1, height_shift_range=0.1,
-                         shear_range=0.1, zoom_range=0.1, horizontal_flip=True, fill_mode='nearest')
-    image_datagen = ImageDataGenerator(**data_gen_args)
-    mask_datagen = ImageDataGenerator(**data_gen_args)
-
-    image_datagen.fit(X_train, augment=True, seed=1)
-    mask_datagen.fit(y_train, augment=True, seed=1)
-
-    return X_train, X_test, y_train, y_test, image_datagen, mask_datagen
+    return X_train, X_val, y_train, y_val
 
 

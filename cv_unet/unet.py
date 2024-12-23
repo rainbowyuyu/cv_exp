@@ -1,121 +1,51 @@
 # rainbow_yu cv_exp.cv_unet.unet 🐋✨
 
 import tensorflow as tf
-from tensorflow.keras import layers
+from tensorflow.keras import layers, models
 
 
-class _EncodeBlock(tf.keras.Model):
-    def __init__(self, filters, stage, data_format):
-        super(_EncodeBlock, self).__init__(name='encode_block_{}'.format(stage))
-        filters1, filters2 = filters
-        conv_name_base = 'encode' + str(stage) + '_conv'
-        bn_name_base = 'encode' + str(stage) + '_bn'
-        pool_name = 'encode' + str(stage) + '_pool'
-        bn_axis = 1 if data_format == 'channels_first' else 3
+def unet_model(input_size=(256, 256, 1)):
+    """
+    Build U-Net model for image segmentation.
+    """
+    inputs = layers.Input(input_size)
 
-        self.conv2a = layers.Conv2D(filters1, (3, 3), padding='same', data_format=data_format,
-                                    name=conv_name_base + '2a')
-        self.bn2a = layers.BatchNormalization(axis=bn_axis, name=bn_name_base + '2a')
-        self.conv2b = layers.Conv2D(filters2, (3, 3), padding='same', data_format=data_format,
-                                    name=conv_name_base + '2b')
-        self.bn2b = layers.BatchNormalization(axis=bn_axis, name=bn_name_base + '2b')
-        self.pool = layers.MaxPooling2D(data_format=data_format, name=pool_name)
+    # Encoder
+    conv1 = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(inputs)
+    conv1 = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(conv1)
+    pool1 = layers.MaxPooling2D((2, 2))(conv1)
 
-    def call(self, input_tensor, training=True):
-        x = self.conv2a(input_tensor)
-        x = self.bn2a(x, training=training)
-        x = layers.Activation('relu')(x)
-        x = self.conv2b(x)
-        x = self.bn2b(x, training=training)
-        x = layers.Activation('relu')(x)
-        poolx = self.pool(x)
-        return [x, poolx]
+    conv2 = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(pool1)
+    conv2 = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(conv2)
+    pool2 = layers.MaxPooling2D((2, 2))(conv2)
 
+    conv3 = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(pool2)
+    conv3 = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(conv3)
+    pool3 = layers.MaxPooling2D((2, 2))(conv3)
 
-class _DecodeBlock(tf.keras.Model):
-    def __init__(self, filters, stage, data_format, transpose_conv=False):
-        super(_DecodeBlock, self).__init__(name='decode_block_{}'.format(stage))
-        filters1, filters2, filters3 = filters
-        self.transpose_conv = transpose_conv
-        conv_name_base = 'decode' + str(stage) + '_conv'
-        bn_name_base = 'decode' + str(stage) + '_bn'
-        up_name_base = 'decode' + str(stage) + '_'
-        bn_axis = 1 if data_format == 'channels_first' else 3
+    # Bottleneck
+    conv4 = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(pool3)
+    conv4 = layers.Conv2D(512, (3, 3), activation='relu', padding='same')(conv4)
 
-        self.conva = layers.Conv2D(filters1, (3, 3), padding='same', data_format=data_format,
-                                   name=conv_name_base + '2a')
-        self.bn2a = layers.BatchNormalization(axis=bn_axis, name=bn_name_base + '2a')
-        self.conv2b = layers.Conv2D(filters2, (3, 3), padding='same', data_format=data_format,
-                                    name=conv_name_base + '2b')
-        self.bn2b = layers.BatchNormalization(axis=bn_axis, name=bn_name_base + '2b')
+    # Decoder
+    up5 = layers.Conv2DTranspose(256, (2, 2), strides=(2, 2), padding='same')(conv4)
+    concat5 = layers.concatenate([up5, conv3], axis=3)
+    conv5 = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(concat5)
+    conv5 = layers.Conv2D(256, (3, 3), activation='relu', padding='same')(conv5)
 
-        if self.transpose_conv:
-            self.conv2c_transpose = layers.Conv2DTranspose(filters3, (3, 3), strides=(2, 2), padding='same',
-                                                           data_format=data_format, name=up_name_base + '2c_transpose')
-        else:
-            self.upsample = layers.UpSampling2D(size=(2, 2), data_format=data_format, name=up_name_base + 'upsample')
+    up6 = layers.Conv2DTranspose(128, (2, 2), strides=(2, 2), padding='same')(conv5)
+    concat6 = layers.concatenate([up6, conv2], axis=3)
+    conv6 = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(concat6)
+    conv6 = layers.Conv2D(128, (3, 3), activation='relu', padding='same')(conv6)
 
-        self.conv2c = layers.Conv2D(filters3, (1, 1), data_format=data_format, name=conv_name_base + '2c')
-        self.bn2c = layers.BatchNormalization(axis=bn_axis, name=bn_name_base + '2c')
+    up7 = layers.Conv2DTranspose(64, (2, 2), strides=(2, 2), padding='same')(conv6)
+    concat7 = layers.concatenate([up7, conv1], axis=3)
+    conv7 = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(concat7)
+    conv7 = layers.Conv2D(64, (3, 3), activation='relu', padding='same')(conv7)
 
-    def call(self, input_tensor, training=True):
-        x = self.conva(input_tensor)
-        x = self.bn2a(x, training=training)
-        x = layers.Activation('relu')(x)
-        x = self.conv2b(x)
-        x = self.bn2b(x, training=training)
-        x = layers.Activation('relu')(x)
+    outputs = layers.Conv2D(1, (1, 1), activation='sigmoid')(conv7)
 
-        if self.transpose_conv:
-            x = self.conv2c_transpose(x)
-            x = self.bn2c(x, training=training)
-        else:
-            x = self.upsample(x)
-            x = self.conv2c(x)
-            x = self.bn2c(x, training=training)
+    model = models.Model(inputs=[inputs], outputs=[outputs])
+    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-        return layers.Activation('relu')(x)
-
-
-class Unet(tf.keras.Model):
-    def __init__(self, data_format, classes, transpose_conv=False, name='unet'):
-        super(Unet, self).__init__(name=name)
-        valid_channel_values = ('channels_first', 'channels_last')
-        if data_format not in valid_channel_values:
-            raise ValueError('Unknown data_format: %s. Valid values: %s' % (data_format, valid_channel_values))
-        self.concat_axis = 3 if data_format == 'channels_last' else 1
-
-        def encode_block(filters, stage):
-            return _EncodeBlock(filters, stage=stage, data_format=data_format)
-
-        def decode_block(filters, stage):
-            return _DecodeBlock(filters, stage=stage, data_format=data_format, transpose_conv=transpose_conv)
-
-        self.e1 = encode_block([32, 32], stage=1)
-        self.e2 = encode_block([64, 64], stage=2)
-        self.e3 = encode_block([128, 128], stage=3)
-        self.e4 = encode_block([256, 256], stage=4)
-
-        self.d4 = decode_block([512, 512, 256], stage=4)
-        self.d3 = decode_block([256, 256, 128], stage=3)
-        self.d2 = decode_block([128, 128, 64], stage=2)
-        self.d1 = decode_block([64, 64, 32], stage=1)
-
-        self.output_block = encode_block([64, 64], stage=5)
-        self.conv_output = layers.Conv2D(classes, (1, 1), data_format=data_format, name='conv_output')
-
-    def build_call(self, inputs, training=True):
-        e1x, x = self.e1(inputs, training=training)
-        e2x, x = self.e2(x, training=training)
-        e3x, x = self.e3(x, training=training)
-        e4x, x = self.e4(x, training=training)
-        x = self.d4(x, training=training)
-        x = layers.concatenate([x, e4x], axis=self.concat_axis)
-        x = self.d3(x, training=training)
-        x = layers.concatenate([x, e3x], axis=self.concat_axis)
-        x = self.d2(x, training=training)
-        x = layers.concatenate([x, e2x], axis=self.concat_axis)
-        x = self.d1(x, training=training)
-        x = layers.concatenate([x, e1x], axis=self.concat_axis)
-        x = self.conv_output(x)
-        return x
+    return model
