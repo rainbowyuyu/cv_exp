@@ -154,8 +154,6 @@ cv_rcnn
 # cv_unet(exp7)
 计算机视觉实验7
 
----
-
 ## 数据预处理
 - 在 `process.py` 中，完成对 `images` 和 `mask` 的读入
 
