@@ -8,7 +8,7 @@ pillow
 scikit-learn
 joblib
 PyQt5
-numpy==1.24.4
-matplotlib==3.8.2
-tensorflow==2.14.0
-opencv-python==4.8.1.78
+numpy
+matplotlib
+opencv-python
+tensorflow
