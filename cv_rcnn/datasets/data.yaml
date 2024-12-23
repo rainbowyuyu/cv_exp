@@ -1,0 +1,13 @@
+name: tomato
+names:
+    0 : 'b_fully_ripened'
+    1 : 'b_half_ripened'
+    2 : 'b_green'
+    3 : 'l_half_ripened'
+    4 : 'l_green'
+    5 : 'l_fully_ripened'
+
+nc: 6
+path: 
+train: tomato_train
+val: tomato_test

@@ -103,3 +103,44 @@ cv_cnn
 ├── val  
 ├── categories.json  
 ├── cv_exp5.ipynb  
+
+---
+
+# cv_rcnn(exp6)
+计算机视觉实验6
+
+## 数据预处理
+- `ipynb` 文件中主要将原来tomato的数据集变为仿coco数据集格式和VOC数据集格式
+
+## RCNN模型
+- 书写了基础的RCNN网络架构，但只是用eval进行评估，可进行后续可视化和训练操作
+
+## YOLO完成第二个网络
+- 这个相当于是计算机视觉中比较基础的操作。如果想体验更完整的功能，可以参考 YOLO 的文档； 
+- YOLO 详细参考 [Ultralytics](https://github.com/ultralytics/yolov5)。
+- 模型的一些性能和参数如图
+![cm](cv_rcnn/model/confusion_matrix_normalized.png)
+![res](cv_rcnn/model/results.png)
+
+> **注意**：模型在 CPU 上运行时间较长。如果没有服务器租赁经验，这里直接提供模型，在 `./model` 中，使用A800完成训练，预计500轮，在400轮左右早停，供大家随意使用。  
+
+---
+
+## 详细使用方法  
+
+1. 安装依赖：
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+   
+2. 注意事项：
+- 根据实际情况调整 pytorch 的版本。
+- 需要原始的数据集，并且按数据集生成代码中的文件路径进行配置和生成合适的数据集
+
+
+## 大致最终文件结构
+cv_rcnn   
+├── model   
+├── datasets    
+├── cv_exp6.ipynb 

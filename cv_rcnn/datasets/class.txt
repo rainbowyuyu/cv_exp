@@ -1,0 +1,6 @@
+'b_fully_ripened',
+ 'b_half_ripened',
+ 'b_green',
+ 'l_half_ripened',
+ 'l_green',
+ 'l_fully_ripened'
