@@ -4,14 +4,14 @@ import torch
 
 
 class Conv(torch.nn.Module):
-    def __init__(self, inchannel, outchannel):
+    def __init__(self, in_channel, out_channel):
         super(Conv, self).__init__()
         self.feature = torch.nn.Sequential(
-            torch.nn.Conv2d(inchannel, outchannel, 3, 1, 1),
-            torch.nn.BatchNorm2d(outchannel),
+            torch.nn.Conv2d(in_channel, out_channel, 3, 1, 1),
+            torch.nn.BatchNorm2d(out_channel),
             torch.nn.ReLU(),
-            torch.nn.Conv2d(outchannel, outchannel, 3, 1, 1),
-            torch.nn.BatchNorm2d(outchannel),
+            torch.nn.Conv2d(out_channel, out_channel, 3, 1, 1),
+            torch.nn.BatchNorm2d(out_channel),
             torch.nn.ReLU())
 
     def forward(self, x):
@@ -19,9 +19,9 @@ class Conv(torch.nn.Module):
 
 
 class UNet(torch.nn.Module):
-    def __init__(self, inchannel, outchannel):
+    def __init__(self, in_channel, out_channel):
         super(UNet, self).__init__()
-        self.conv1 = Conv(inchannel, 64)
+        self.conv1 = Conv(in_channel, 64)
         self.conv2 = Conv(64, 128)
         self.conv3 = Conv(128, 256)
         self.conv4 = Conv(256, 512)
@@ -40,7 +40,7 @@ class UNet(torch.nn.Module):
         self.up4 = torch.nn.ConvTranspose2d(128, 64, 2, 2)
         self.conv9 = Conv(128, 64)
 
-        self.conv10 = torch.nn.Conv2d(64, outchannel, 3, 1, 1)
+        self.conv10 = torch.nn.Conv2d(64, out_channel, 3, 1, 1)
 
     def forward(self, x):
         xc1 = self.conv1(x)

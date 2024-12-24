@@ -151,8 +151,8 @@ cv_rcnn
 
 ---
 
-# cv_unet(exp7)
-计算机视觉实验7
+# cv_unet_tf(exp7 tensorflow版本)
+计算机视觉实验7 tensorflow版本，这个只把模型跑出来了，建议使用下面pytorch完整版本
 
 ## 数据预处理
 - 在 `process.py` 中，完成对 `images` 和 `mask` 的读入
@@ -176,10 +176,62 @@ cv_rcnn
    ```
 
 ## 大致最终文件结构
-cv_unet  
+cv_unet_tf  
 ├── DRIVE  
 ├── process.py    
 ├── unet.py   
 ├── train.py     
-├── test.py
+├── test.py  
 ├── unet_model.h5
+
+---
+
+# cv_unet_pt(exp7 pytorch版本)
+计算机视觉实验7 pytorch版本，完整的数据预处理，模型构建和结果可视化
+
+## 数据预处理
+- 在 `dataset_operation.py` 中，调用 `read_picture` ，完成对 `images` 和 `mask` 的读入
+
+## U -net模型
+- 在 `unet.py` 中，完成对 U-net 网络的构建
+
+## 训练模型
+- 在 `train.py` 中，读取训练集，完成对模型的训练，返回 `best.pt` 和 `last.pt` ，绘制损失函数
+
+## 评估模型
+- 在 `predict.py` 中，读取测试集，完成保存模型的评估，可视化呈现
+
+## 详细使用方法
+
+1. 运行方法
+
+   ```bash
+   pip install -r requirements.txt
+   cd ./cv_unet_pt
+   python train.py
+   python predict.py
+   ```
+2. 注意事项：
+- 根据实际的 `cuda` 版本调整 `pytorch` 的版本，详细信息可以参考[pytorch官网](https://pytorch.ac.cn/)。
+- 需要原始的数据集，参考[DRIVE](https://drive.grand-challenge.org/)，并且按数据集生成代码中的文件路径进行配置和生成合适的数据集
+
+## 实验的损失函数和结果示例
+
+![loss](cv_unet_pt/picture_show/loss.png)
+![res](cv_unet_pt/picture_show/result.png)
+
+## 大致最终文件结构
+cv_unet_pt  
+├── read_picture.py  
+├── dataset_operation.py    
+├── unet.py   
+├── train.py     
+├── predict.py
+
+> **注意**：由于数据集和模型过大，于是没有上传 GitHub ，按照外部文件结构放置，位置在 ../../DRIVE_datasets ，注意文件路径的配置
+
+
+DRIVE_datasets  
+├── DRIVE  
+├── data_done    
+├── model
