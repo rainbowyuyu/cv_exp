@@ -170,7 +170,7 @@ cv_rcnn
 
    ```bash
    pip install -r requirements.txt
-   cd ./cv_unet
+   cd ./cv_unet_tf
    python train.py
    python eval.py
    ```
