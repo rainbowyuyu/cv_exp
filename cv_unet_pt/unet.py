@@ -76,7 +76,6 @@ class UNet(torch.nn.Module):
 
 if __name__ == "__main__":
     input = torch.randn((1, 3, 512, 512))
-    # model = Conv(3,3)
     model = UNet(3, 1)
     output = model(input)
     print(output.shape)
